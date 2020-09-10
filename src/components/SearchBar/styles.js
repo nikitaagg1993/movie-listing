@@ -23,7 +23,7 @@ const InputStyle = styled.input`
     height: 25px;
     margin: 10px;
     padding: 5px;
-    width: 350px;
+    width: ${props => props.shortInput ? '100px' : '350px'};
 `;
 
 export default InputStyle;

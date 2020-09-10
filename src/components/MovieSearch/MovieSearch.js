@@ -1,10 +1,12 @@
 import React from 'react';
-import NavBar from '../NavBar';
 import SearchBar from '../SearchBar'
 import Error from '../Error';
 import generateUrl from '../../utils/generateUrl';
 import MovieCard from '../MovieCard';
 import MovieSearchStyles from './styles';
+import Loader from '../Loader';
+import setItemInLocalStorage, { getItemFromLocalStorage } from '../../utils/localStorageHelper'
+
 
 export default class MovieSearch extends React.Component {
     constructor() {
@@ -12,7 +14,7 @@ export default class MovieSearch extends React.Component {
         this.state = {
           movie: {},
           error: null,
-          isLoading: true,
+          isLoading: false,
           isFavorite: false,
         };
       }
@@ -29,10 +31,14 @@ export default class MovieSearch extends React.Component {
                 return;
             }
 
+            const favorites = getItemFromLocalStorage();
+            const findIndex = favorites.findIndex(item => item.imdbID === movie.imdbID);
+
             this.setState({
                 isLoading: false,
                 movie,
                 error: null,
+                isFavorite: findIndex !== -1,
             });
         })
         .catch((error) => {
@@ -44,31 +50,49 @@ export default class MovieSearch extends React.Component {
     };
 
     onClick = (result) => {
+        this.setState({ isLoading: true });
+        if(!result.t) {
+            this.setState({ error: 'Title should not be blank', isLoading: false})
+            return;
+        }
         const url = generateUrl(result);
         this.getApiData(url);
     }
 
     onToggleFavorite = () => {
-        const { isFavorite } = this.state;
-        this.setState({ isFavorite: !isFavorite });
+        const { isFavorite, movie } = this.state;
+        this.setState({ isFavorite: !isFavorite }, () => {
+            const parsedFavorites = getItemFromLocalStorage();
+            if(this.state.isFavorite) parsedFavorites.push(movie)
+            else if(parsedFavorites.length) {
+                const favIndex = parsedFavorites.findIndex(item => item.imdbID === movie.imdbID)
+                parsedFavorites.splice(favIndex,1)
+            }
+            setItemInLocalStorage(parsedFavorites);
+        });
+    }
+
+    getMovieComponent = () => {
+        const { error, isLoading, isFavorite, movie } = this.state
+        
+        if(isLoading) return <Loader />;
+        if(error || !movie) return <Error error={error}/>;
+        return (<MovieCard
+            isFavorite={isFavorite}
+            movie={movie}
+            onToggleFavorite={this.onToggleFavorite}
+            history={this.props.history}
+        />);
     }
 
     render() {
-        const { error, isFavorite, movie } = this.state;
         return (
-        <>
-            <NavBar/>
-            <MovieSearchStyles>
-            <SearchBar onClick={this.onClick}/>
-                {error
-                    ? <Error error='No Movie Found' ></Error>
-                    : <MovieCard
-                        isFavorite={isFavorite}
-                        movie={movie}
-                        onToggleFavorite={this.onToggleFavorite}
-                    />}
-            </MovieSearchStyles>
-        </>
+            <>
+                <MovieSearchStyles>
+                    <SearchBar onClick={this.onClick}/>
+                    {this.getMovieComponent()}
+                </MovieSearchStyles>
+            </>
         )
     }
 }

@@ -1,9 +1,9 @@
 const generateUrl = (options) => {
-    let url = 'http://www.omdbapi.com/?i=tt3896198&apikey=4f5707cc';
-    if(!options || !Object.keys(options).length) return url;
+    let url = 'http://www.omdbapi.com/?apikey=4f5707cc';
+    if(!options || !Object.keys(options).length) return;
   
     Object.keys(options).forEach((item) => {
-        if(options[item] === 'all') return;
+        if(options[item] === 'all' || !options[item]) return;
         url += `&${item}=${options[item]}`
     })
     return url;

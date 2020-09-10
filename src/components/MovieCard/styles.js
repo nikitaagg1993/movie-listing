@@ -5,10 +5,22 @@ const CardContainer = styled.div`
     border-style: ridge;
     border-width: 1px;
     background-color: #ebecf0;
-    margin: 10px;
-    width: 20%;
-    margin: 50px auto 0;
-    height: 750px;
+    width: 33%;
+    margin: 40px auto 0;
+    height: 800px;
+
+    ${props => props.isSmall && `
+        margin: 50px 30px 0;
+        height: 300px;
+        width: 200px;
+    `}
+
+    ${props => props.isMovieDetail && `
+        text-align: center;
+        float:left;
+        margin-left: 50px;
+        eight: 850px;
+    `}
 `;
 
 export const ImageStyle = styled.img`
@@ -19,6 +31,16 @@ export const ImageStyle = styled.img`
 export const TitleStyle = styled.h3`
     color: #317c99;
     display: block;
+
+    ${props => props.isSmall && `
+        font-size: 12px;
+        text-align: center;
+    `}
+
+    ${props => props.isMovieDetail && `
+        font-size: 14px;
+    `}
+
 `;
 
 export const FavoriteStyle = styled.div`
